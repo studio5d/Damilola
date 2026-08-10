@@ -304,7 +304,7 @@ if (document.getElementById('gallery-grid')) {
         <button class="select-btn ${selected.includes(img.number) ? 'selected' : ''}" data-number="${img.number}">
           ${selected.includes(img.number) ? 'Selected' : 'Select'}
         </button>
-        <div class="watermark">Belamay © - Not for Download</div>
+        
       `;
       galleryGrid.appendChild(item);
 
