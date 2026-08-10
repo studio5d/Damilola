@@ -398,14 +398,35 @@ if (document.getElementById('selected-grid')) {
     e.preventDefault();
     const name = document.getElementById('name').value;
     const contact = document.getElementById('contact').value;
+    const selectedNumbers = selectedImages.map(img => img.number).join(', ');
+    const formAction = submitForm.action || 'https://formspree.io/f/xkoarpkq';
 
-    // Here you could send the data to a server
-    console.log('Submission:', { name, contact, selectedImages });
-
-    alert(`Thank you ${name}! Your selection has been submitted. We will contact you at ${contact}.`);
-
-    // Clear selection
-    localStorage.removeItem('selectedImages');
-    window.location.href = 'gallery.html';
+    fetch(formAction, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        name,
+        contact,
+        selectedImages: selectedNumbers
+      })
+    })
+      .then(response => {
+        if (response.ok) {
+          return response.json();
+        }
+        return response.json().then(data => Promise.reject(data));
+      })
+      .then(() => {
+        alert(`Thank you ${name}! Your selection has been submitted. We will contact you at ${contact}.`);
+        localStorage.removeItem('selectedImages');
+        window.location.href = 'gallery.html';
+      })
+      .catch((error) => {
+        console.error('Form submission error:', error);
+        alert('There was an error sending your selection. Please try again.');
+      });
   });
 }
