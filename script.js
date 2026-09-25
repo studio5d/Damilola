@@ -179,6 +179,9 @@ const screenshotBlocker = {
 const musicManager = {
   currentAudio: null,
   isMuted: false,
+  playlistAudio: null,
+  playlistTracks: [],
+  playlistIndex: 0,
 
   playSoundtrack(audioElementId, src) {
     const audio = document.getElementById(audioElementId);
@@ -194,6 +197,35 @@ const musicManager = {
       audio.play().catch(err => console.log('Audio autoplay prevented:', err));
     }
     this.currentAudio = audio;
+  },
+
+  playPlaylist(audioElementId, tracks) {
+    const audio = document.getElementById(audioElementId);
+    if (!audio || !tracks.length) return;
+
+    if (this.currentAudio && this.currentAudio !== audio) {
+      this.currentAudio.pause();
+    }
+
+    if (this.playlistAudio !== audio || this.playlistTracks.join('|') !== tracks.join('|')) {
+      this.playlistAudio = audio;
+      this.playlistTracks = tracks;
+      this.playlistIndex = 0;
+      audio.onended = () => {
+        this.playlistIndex = (this.playlistIndex + 1) % this.playlistTracks.length;
+        audio.src = this.playlistTracks[this.playlistIndex];
+        if (!this.isMuted) {
+          audio.play().catch(err => console.log('Audio play error:', err));
+        }
+      };
+    }
+
+    audio.loop = false;
+    audio.volume = 1.0;
+    this.currentAudio = audio;
+    if (!this.isMuted && audio.paused) {
+      audio.play().catch(err => console.log('Audio play error:', err));
+    }
   },
 
   toggleMute() {
@@ -280,14 +312,15 @@ if (document.getElementById('gallery-grid')) {
   const modalNumber = document.getElementById('modal-number');
   const close = document.querySelector('.modal-close');
   const modalBackdrop = document.querySelector('.modal-backdrop');
-  const selectionMusic = document.getElementById('selection-music');
-
   let selected = JSON.parse(localStorage.getItem('selectedImages') || '[]');
 
-  // Start gallery background music
-  if (selectionMusic) {
-    musicManager.playSoundtrack('selection-music', 'music/selection-background.mp3');
-  }
+  const selectionTracks = [
+    'music/STUDIO%205D%20-FREEZE%20THE%20MOMENT.mp3',
+    'music/STUDIO%205D%20-FREEZE%20THE%20MOMENT%20(1).mp3',
+  ];
+
+  // Start music as soon as the gallery opens; image interactions retry if autoplay is blocked.
+  musicManager.playPlaylist('selection-music', selectionTracks);
 
   function updateSelectionCount() {
     selectionCount.textContent = selected.length;
@@ -309,7 +342,9 @@ if (document.getElementById('gallery-grid')) {
       galleryGrid.appendChild(item);
 
       // Event listeners
-      item.querySelector('img').addEventListener('click', () => {
+      item.addEventListener('click', (event) => {
+        if (event.target.closest('.select-btn')) return;
+        musicManager.playPlaylist('selection-music', selectionTracks);
         modalImg.src = img.path;
         modalNumber.textContent = `Image #${img.number}`;
         modal.style.display = 'flex';
@@ -320,14 +355,11 @@ if (document.getElementById('gallery-grid')) {
         modalImg.style.userSelect = 'none';
         modalImg.style.webkitUserDrag = 'none';
         
-        // Play the music for this specific image if available
-        if (img.music) {
-          musicManager.playSoundtrack('selection-music', img.music);
-        }
       });
 
       item.querySelector('.select-btn').addEventListener('click', (e) => {
         e.stopPropagation();
+        musicManager.playPlaylist('selection-music', selectionTracks);
         const number = parseInt(e.target.dataset.number);
         if (selected.includes(number)) {
           selected = selected.filter(n => n !== number);
@@ -353,18 +385,10 @@ if (document.getElementById('gallery-grid')) {
 
   close.addEventListener('click', () => {
     modal.style.display = 'none';
-    // Resume gallery background music
-    if (selectionMusic && !musicManager.isMuted) {
-      musicManager.playSoundtrack('selection-music', 'music/selection-background.mp3');
-    }
   });
 
   modalBackdrop.addEventListener('click', () => {
     modal.style.display = 'none';
-    // Resume gallery background music
-    if (selectionMusic && !musicManager.isMuted) {
-      musicManager.playSoundtrack('selection-music', 'music/selection-background.mp3');
-    }
   });
 }
 

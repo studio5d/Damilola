@@ -354,42 +354,6 @@ img {
   box-shadow: 0 8px 24px rgba(0, 217, 255, 0.4);
 }
 
-/* Watermark overlay */
-.watermark {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.15);
-  color: rgba(255, 255, 255, 0.25);
-  font-size: 0.75rem;
-  opacity: 1;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-  z-index: 2;
-  font-weight: 600;
-}
-
-.gallery-item:hover .watermark {
-  color: rgba(255, 255, 255, 0.4);
-}
-
-.watermark-text {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) rotate(-45deg);
-  font-size: 1.8rem;
-  color: rgba(255, 255, 255, 0.12);
-  font-weight: 700;
-  white-space: nowrap;
-  pointer-events: none;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-  font-family: 'Geist', sans-serif;
-  z-index: 10;
-}
-
 /* ==================== MODERN MODAL ==================== */
 .modal {
   display: none;
